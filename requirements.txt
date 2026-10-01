@@ -1,12 +1,11 @@
-# Core: LangChain + NVIDIA NIM.
-# Pin exact versions after the first working install (pip freeze), for reproducibility.
-langchain
-langchain-nvidia-ai-endpoints
-
-# Undecided (to be added once chosen):
-#   - structured output / validation (Pydantic arrives with LangChain)
-#   - PDF text extraction
-#   - HTML text extraction
-#   - fuzzy string matching for quote verification
-#   - .env loading
-# Corpus fetching (corpus/fetch_corpus.py) uses `requests`.
+# Versions verified on Python 3.13 (2026-10-01).
+langchain==1.4.3
+langchain-core==1.6.6
+langchain-nvidia-ai-endpoints==1.4.3   # ChatNVIDIA: NVIDIA NIM chat models
+pydantic==2.13.5                        # typed tool and LLM output schemas
+python-dotenv==1.2.4                    # .env loading
+pypdf==6.19.0                           # PDF text extraction (ingest)
+beautifulsoup4==4.15.0                  # HTML text extraction (ingest)
+rapidfuzz==3.14.6                       # fuzzy quote matching (verification gate)
+requests==2.34.2                        # corpus/fetch_corpus.py
+pytest==9.1.1                           # tests/

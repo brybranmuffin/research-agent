@@ -12,3 +12,4 @@ corpus.db
 # Python / env
 .venv/
 *.pyc
+.*NOTES.md

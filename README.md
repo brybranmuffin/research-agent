@@ -2,7 +2,7 @@
 
 A small multi-agent system that takes a research question, gathers and cross-checks sources, and writes a short, cited brief. Separate worker processes split the work into **search**, **extraction**, and **synthesis**. An **orchestrator** plans the work, hands it out, supervises it, and revises the plan.
 
-> **Status:** design phase. This README describes the intended architecture. Run instructions will be finalized once the system is built.
+> **Status:** working end to end. See [How to run](#how-to-run).
 
 ---
 
@@ -125,8 +125,8 @@ These numbers come from four constraints:
 |---|---|---|
 | Heartbeat / lease | heartbeat every 10s, lease 45s | Tells a *slow* worker apart from a *dead* one. A dead worker is detected within about 45s |
 | Hard task timeout | 300s | Catches a worker that is alive but stuck in a loop, which heartbeats alone would miss |
-| Retries, transient errors (429, timeout, network) | 3 attempts, backoff of 2, 8 and 30 seconds | Transient errors deserve patience |
-| Retries, deterministic errors (schema still invalid after repair, unreadable document) | 2 attempts | Retrying the same failure again and again wastes rate limit |
+| Retries, transient errors (429, timeout, network, lost worker) | 3 retries (4 attempts), backoff of 2, 8 and 30 seconds | Transient errors deserve patience |
+| Retries, deterministic errors (schema still invalid after repair, unreadable document) | 1 retry (2 attempts) | Retrying the same failure again and again wastes rate limit |
 | Schema repair | 1 per LLM call | One repair fixes most JSON slips |
 | Shared rate limiter | 30 requests/min, a token bucket in the shared store | Leaves headroom under the provider's limit and keeps workers from triggering 429 errors and using up their retries |
 | Supervisor tick / worker poll | 1s / 0.5–2s with idle backoff | Coordination never becomes the bottleneck |
@@ -178,10 +178,24 @@ When that happens, the orchestrator skips straight to writing with everything ve
 
 ## How to run
 
-*Coming soon. The planned shape is:*
+Requires Python 3.11+ and a free NVIDIA NIM key from [build.nvidia.com](https://build.nvidia.com).
 
-1. Fetch and verify the corpus.
-2. Run the demo question live with a NIM key, or play back a recorded run with no keys.
-3. Optionally enable chaos mode, or kill a run and restart it to watch it resume.
+```bash
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env                     # then set NVIDIA_API_KEY
 
-See **NOTES** (to be written) for what we went deep on and why, the decisions we're most confident about, what was cut, and how coding tools were used.
+python corpus/fetch_corpus.py            # download the 34 open-access sources, sha256-verified (~125 MB)
+python run.py ingest                     # parse PDFs/HTML -> corpus.db (chunks + FTS5 index), ~20 s
+
+python run.py                            # run the demo question (about 10-15 min on the free tier)
+python run.py "your question" --chaos    # seeded faults: tool errors, malformed LLM output, a killed worker
+python run.py --resume <run_id>          # Ctrl-C a run, then continue it from state.db
+python run.py replay <run_id>            # play a recorded run back from its trace (no keys, no network)
+
+pytest -q                                # queue + verification guarantees (no network)
+```
+
+Each run writes to `runs/<run_id>/`: `brief.md` (the cited brief), `run_report.md` (steps, retries, recoveries, plan history, verification stats, context size over the run), `state.db` (everything), and `logs/` (one log per process).
+
+See **NOTES.md** for what we went deep on and why, the decisions we're most confident about, what was cut, and how coding tools were used.
