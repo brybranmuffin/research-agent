@@ -1,0 +1,12 @@
+# Core: LangChain + NVIDIA NIM.
+# Pin exact versions after the first working install (pip freeze), for reproducibility.
+langchain
+langchain-nvidia-ai-endpoints
+
+# Undecided (to be added once chosen):
+#   - structured output / validation (Pydantic arrives with LangChain)
+#   - PDF text extraction
+#   - HTML text extraction
+#   - fuzzy string matching for quote verification
+#   - .env loading
+# Corpus fetching (corpus/fetch_corpus.py) uses `requests`.

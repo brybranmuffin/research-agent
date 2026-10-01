@@ -96,6 +96,59 @@ Each worker gets a fresh context for every task. No agent keeps a running transc
 - **Single writer of the plan:** only the orchestrator creates tasks or changes the plan. Workers only claim tasks and report results. This prevents sub-agents from working at cross purposes.
 - **Deduplication:** repeated searches are collapsed by hashing the query.
 
+### Orchestration parameters
+
+These numbers come from four constraints:
+- **Rate limit.** All processes share one NIM key, which allows roughly 40 requests a minute. This limits throughput, not the worker count.
+- **Corpus size.** About 40 documents.
+- **Horizon target.** About 150 to 250 logged steps per run.
+- **Latency.** Free models take 10 to 40 seconds per call, with occasional queueing over 60 seconds.
+
+**Plan shape**
+
+| Parameter | Value | Reasoning |
+|---|---|---|
+| Initial sub-questions | 4–6 (hard cap 6) | The debate has about 5 lines of evidence: tail, bone density, buoyancy and proportions, skull and neck feeding, paleoenvironment |
+| Max sub-questions after replanning | 8 (at most +2 per review round) | The plan can grow without exploding |
+| Review rounds | max 2 | Round 1 addresses contested or thin sub-questions, and round 2 confirms. More rounds cost calls for little gain |
+
+**Work per sub-question**
+
+| Parameter | Value | Reasoning |
+|---|---|---|
+| Search | 1 task per sub-question, ≤3 queries, top 4 documents | Covers both sides of the debate without reading the whole corpus |
+| Extract | 1 task per (sub-question, document), ≤2 page windows of about 3 pages each, centered on the pages where search found hits | Papers run 15 to 30 pages, so we read where the evidence is |
+
+**Timing and failure handling**
+
+| Parameter | Value | Reasoning |
+|---|---|---|
+| Heartbeat / lease | heartbeat every 10s, lease 45s | Tells a *slow* worker apart from a *dead* one. A dead worker is detected within about 45s |
+| Hard task timeout | 300s | Catches a worker that is alive but stuck in a loop, which heartbeats alone would miss |
+| Retries, transient errors (429, timeout, network) | 3 attempts, backoff of 2, 8 and 30 seconds | Transient errors deserve patience |
+| Retries, deterministic errors (schema still invalid after repair, unreadable document) | 2 attempts | Retrying the same failure again and again wastes rate limit |
+| Schema repair | 1 per LLM call | One repair fixes most JSON slips |
+| Shared rate limiter | 30 requests/min, a token bucket in the shared store | Leaves headroom under the provider's limit and keeps workers from triggering 429 errors and using up their retries |
+| Supervisor tick / worker poll | 1s / 0.5–2s with idle backoff | Coordination never becomes the bottleneck |
+
+**Barriers and budgets**
+
+| Parameter | Value | Reasoning |
+|---|---|---|
+| Barrier rule | A phase is complete when all its tasks have finished, successfully or not, or after a 10-minute phase timeout | One stuck sub-question can't hold up the whole run |
+| Global budgets | 120 tasks, 250 LLM calls, 30 minutes of wall-clock time | A safety stop. Hitting a limit triggers graceful degradation (see below) |
+
+**Expected size of a run:** about 100 LLM calls plus about 100 tool calls, for about 200 steps in roughly 5 to 10 minutes at 30 requests a minute.
+
+### Graceful degradation
+
+The run always produces a brief. It never fails silently or without output. Graceful degradation kicks in when any of these happens:
+- a budget limit is reached,
+- a phase times out,
+- a sub-question ends up with no verified evidence.
+
+When that happens, the orchestrator skips straight to writing with everything verified so far. Each sub-question that lacks evidence gets an explicit *insufficient evidence* note giving the cause, for example "3 of 4 extract tasks failed". The run report records which trigger fired and when.
+
 ## Tool calls and verification (Tier 1)
 
 - **Schema validation:** every LLM output and tool result is checked against a typed schema. Malformed output gets one repair attempt with the validation error fed back, then counts as a task failure.
@@ -113,13 +166,13 @@ Each worker gets a fresh context for every task. No agent keeps a running transc
 ## Reproducibility
 
 - **Pinned corpus:** a manifest plus a fetch script with hash checks.
-- **Replay mode:** every live LLM call is recorded in the trace, keyed by a hash of the request content. In replay mode the LLM client returns those recorded responses with no network or API keys. Responses are matched by content rather than step order, so this works even though the multi-process schedule changes between runs.
-- **Chaos mode:** seeded fault injection (tool errors, malformed LLM output, a worker killed mid-task) shows recovery. The fixed seed means a replay fails the same way every time.
+- **Replay (playback):** every run records its full trace (task events, tool calls, LLM prompts and outputs) in its state store. Replaying a run prints that trace in order, as if the run were happening, with no models, network, or API keys. Playback shows *what happened*. Re-executing the system against recorded LLM responses is planned next (see NOTES).
+- **Chaos mode:** seeded fault injection (tool errors, malformed LLM output, a worker killed mid-task) shows recovery. The fixed seed makes the faults repeatable.
 
 ## Stack
 
 - Python, LangChain
-- LLM providers, selected by an environment variable: **NVIDIA NIM** (default, free tier), **OpenRouter**, or **replay**
+- **NVIDIA NIM** (free tier) via LangChain; each agent declares its own model
 - SQLite (standard library) for the shared store and its full-text search index
 - PDF and HTML text extraction for the paged readers
 
@@ -128,7 +181,7 @@ Each worker gets a fresh context for every task. No agent keeps a running transc
 *Coming soon. The planned shape is:*
 
 1. Fetch and verify the corpus.
-2. Run the demo question live with a NIM key, or replay it from the committed trace with no keys.
+2. Run the demo question live with a NIM key, or play back a recorded run with no keys.
 3. Optionally enable chaos mode, or kill a run and restart it to watch it resume.
 
 See **NOTES** (to be written) for what we went deep on and why, the decisions we're most confident about, what was cut, and how coding tools were used.

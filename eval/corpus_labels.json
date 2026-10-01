@@ -1,0 +1,518 @@
+{
+  "_comment": "GROUND TRUTH FOR EVALUATION ONLY. Research agents must never read this file. Keys of `docs` match ids in corpus/manifest.json (all 40 entries, including unavailable ones).",
+  "schema_version": 1,
+  "research_question": "Was Spinosaurus an aquatic pursuit predator, and how strong is the evidence?",
+  "stance_values": {
+    "aquatic": "argues Spinosaurus (or spinosaurids) were aquatic / semi-aquatic swimmers or divers that foraged underwater",
+    "wading": "argues against aquatic pursuit/diving; favours a shoreline, wading, bipedal ambush ('heron-like') predator",
+    "mixed": "evidence or coverage that cuts both ways, or supports a fish diet without deciding between pursuit and wading",
+    "background": "anatomy, taxonomy, discovery history or environment without taking a side on the ecology question",
+    "tangential": "related spinosaurid work that a good search agent should rank low for this question"
+  },
+  "relation_values": {
+    "rebuts": "argues against the target's central conclusion",
+    "supports": "presents new evidence or argument in favour of the target's conclusion",
+    "reports_on": "journalism or press release about the target",
+    "summarizes": "restates the target's evidence (useful stand-in when the target is unavailable)"
+  },
+  "docs": {
+    "ibrahim2014_science": {
+      "stance": "aquatic",
+      "key_claims": [
+        "A new neotype skeleton shows Spinosaurus had retracted nares, a reduced pelvis and hindlimbs, dense long bones lacking open medullary cavities, and flat-bottomed pedal unguals, all interpreted as semiaquatic adaptations.",
+        "Its centre of mass lay well forward of the hips, implying it was likely quadrupedal on land and spent much of its time foraging in water."
+      ],
+      "responds_to": []
+    },
+    "ibrahim2020_nature": {
+      "stance": "aquatic",
+      "key_claims": [
+        "A nearly complete tail from the neotype has very tall neural spines and elongate chevrons that form a large, flexible, fin-like tail unique among dinosaurs.",
+        "Robotic flapping experiments show this tail produces far more thrust, more efficiently, than the tails of terrestrial theropods, supporting tail-propelled swimming in a largely aquatic predator."
+      ],
+      "responds_to": [
+        {
+          "id": "ibrahim2014_science",
+          "relation": "supports"
+        }
+      ]
+    },
+    "fabbri2022_nature": {
+      "stance": "aquatic",
+      "key_claims": [
+        "Bone compactness of femora and dorsal ribs, analysed with phylogenetic flexible discriminant analysis across a large amniote sample, classifies Spinosaurus and Baryonyx as subaqueous foragers (divers).",
+        "Suchomimus is classified as non-diving, implying ecological diversity within Spinosauridae."
+      ],
+      "responds_to": [
+        {
+          "id": "ibrahim2014_science",
+          "relation": "supports"
+        }
+      ]
+    },
+    "fabbri2022_biorxiv_reply": {
+      "stance": "aquatic",
+      "key_claims": [
+        "Myhrvold et al.'s criticisms (selective bone sampling, inadequate statistics, inaccurate ecological categories) misrepresent the original analyses as qualitative interpretations of plots.",
+        "Re-analyses using the original datasets plus Myhrvold et al.'s new data still recover Spinosaurus and Baryonyx as subaqueous foragers and Suchomimus as non-diving."
+      ],
+      "responds_to": [
+        {
+          "id": "myhrvold2022_biorxiv",
+          "relation": "rebuts"
+        },
+        {
+          "id": "fabbri2022_nature",
+          "relation": "supports"
+        },
+        {
+          "id": "fabbri2022_nature",
+          "relation": "summarizes"
+        }
+      ]
+    },
+    "myhrvold2022_biorxiv": {
+      "stance": "wading",
+      "key_claims": [
+        "The inference that spinosaurids were 'subaqueous foragers' rests on selectively sampled bone cross-sections and problematic statistical inference.",
+        "Bone compactness data as analysed by Fabbri et al. cannot reliably establish diving behaviour in Spinosaurus or Baryonyx."
+      ],
+      "responds_to": [
+        {
+          "id": "fabbri2022_nature",
+          "relation": "rebuts"
+        }
+      ]
+    },
+    "myhrvold2024_plosone": {
+      "stance": "wading",
+      "key_claims": [
+        "Bone compactness varies strongly along a bone and between sections, and Fabbri et al.'s dataset contains measurement and categorisation errors.",
+        "pFDA classifications of lifestyle from bone compactness are unreliable for these taxa, so the data do not support inferring diving or an aquatic habit for spinosaurids."
+      ],
+      "responds_to": [
+        {
+          "id": "fabbri2022_nature",
+          "relation": "rebuts"
+        },
+        {
+          "id": "fabbri2022_biorxiv_reply",
+          "relation": "rebuts"
+        }
+      ]
+    },
+    "sereno2022_elife": {
+      "stance": "wading",
+      "key_claims": [
+        "CT-based digital flesh models show Spinosaurus would have been unstable floating at the surface and too buoyant to dive, and its tail and body make it a slow, inefficient swimmer.",
+        "Its centre of mass lay over the hind feet, so it was a capable biped on land, best interpreted as a semiaquatic bipedal ambush piscivore of shorelines and shallow water rather than an aquatic pursuit predator."
+      ],
+      "responds_to": [
+        {
+          "id": "ibrahim2014_science",
+          "relation": "rebuts"
+        },
+        {
+          "id": "ibrahim2020_nature",
+          "relation": "rebuts"
+        },
+        {
+          "id": "fabbri2022_nature",
+          "relation": "rebuts"
+        },
+        {
+          "id": "henderson2018_peerj",
+          "relation": "supports"
+        }
+      ]
+    },
+    "henderson2018_peerj": {
+      "stance": "wading",
+      "key_claims": [
+        "3D digital models place Spinosaurus's centre of mass close to the hips, consistent with bipedality rather than the anterior position claimed for the neotype reconstruction.",
+        "A floating Spinosaurus would have been buoyant and laterally unstable, prone to tipping onto its side, which argues against a semi-aquatic, diving lifestyle."
+      ],
+      "responds_to": [
+        {
+          "id": "ibrahim2014_science",
+          "relation": "rebuts"
+        },
+        {
+          "id": "ibrahim2014_science",
+          "relation": "summarizes"
+        }
+      ]
+    },
+    "honeholtz2021_pe": {
+      "stance": "wading",
+      "key_claims": [
+        "A review of anatomical, ecological and taphonomic evidence finds Spinosaurus poorly suited to being an aquatic pursuit predator.",
+        "Spinosaurus is best interpreted as a shoreline generalist that waded and hunted fish and other prey from the water's edge, in a heron-like or stork-like way."
+      ],
+      "responds_to": [
+        {
+          "id": "ibrahim2014_science",
+          "relation": "rebuts"
+        },
+        {
+          "id": "ibrahim2020_nature",
+          "relation": "rebuts"
+        },
+        {
+          "id": "ibrahim2014_science",
+          "relation": "summarizes"
+        }
+      ]
+    },
+    "gimsa2021_life": {
+      "stance": "aquatic",
+      "key_claims": [
+        "The newly described swim tail, considered with the body it propelled and compared using Reynolds numbers, suggests Spinosaurus was a specialised deep-water predator.",
+        "The dorsal sail and head shape can be interpreted as hydrodynamic adaptations for underwater manoeuvring and prey capture."
+      ],
+      "responds_to": [
+        {
+          "id": "ibrahim2020_nature",
+          "relation": "supports"
+        },
+        {
+          "id": "gimsa2016_geolmag",
+          "relation": "supports"
+        }
+      ]
+    },
+    "gimsa2016_geolmag": {
+      "stance": "aquatic",
+      "key_claims": [
+        "Rather than thermoregulation, fat storage or display, the dorsal sail of a semiaquatic Spinosaurus could have worked underwater, improving manoeuvrability and acting as a hydrodynamic fulcrum for powerful neck and tail strikes, as in sailfish or thresher sharks.",
+        "The sail may also have been used as a screen to herd or encircle prey underwater."
+      ],
+      "responds_to": [
+        {
+          "id": "ibrahim2014_science",
+          "relation": "supports"
+        }
+      ]
+    },
+    "aureliano2018_paleorxiv": {
+      "stance": "aquatic",
+      "key_claims": [
+        "A large spinosaurine tibia from the Romualdo Formation of Brazil is osteosclerotic and has a reduced fibular crest, features otherwise seen only in Spinosaurus aegyptiacus.",
+        "High bone compactness, a correlate of semi-aquatic habits, was already present in Brazilian spinosaurines millions of years before the Moroccan Spinosaurus."
+      ],
+      "responds_to": [
+        {
+          "id": "ibrahim2014_science",
+          "relation": "supports"
+        }
+      ]
+    },
+    "vullo2016_app": {
+      "stance": "aquatic",
+      "key_claims": [
+        "Spinosaurid jaws converge with those of pike conger eels: a compressed, elongate rostrum, a terminal rosette of enlarged teeth, and a notch behind it.",
+        "This jaw design, together with integumentary mechanoreceptors in the snout, is interpreted as an adaptation for seizing elusive prey in low-light aquatic environments, supporting a semi-aquatic lifestyle."
+      ],
+      "responds_to": [
+        {
+          "id": "ibrahim2014_science",
+          "relation": "supports"
+        }
+      ]
+    },
+    "amiot2010_geology": {
+      "stance": "aquatic",
+      "key_claims": [
+        "Oxygen isotope compositions of spinosaurid tooth phosphate resemble those of co-occurring crocodilians and turtles more than those of other theropods.",
+        "This indicates spinosaurids spent much of their time in water, i.e. had semi-aquatic habits."
+      ],
+      "responds_to": []
+    },
+    "beevor2021_cretres": {
+      "stance": "aquatic",
+      "key_claims": [
+        "The abundance and preservation of Spinosaurus remains in the Kem Kem fluvial deposits, relative to other theropods, is argued to reflect an animal that lived predominantly in water."
+      ],
+      "responds_to": [
+        {
+          "id": "ibrahim2014_science",
+          "relation": "supports"
+        }
+      ]
+    },
+    "lakin2019_cretres": {
+      "stance": "aquatic",
+      "key_claims": [
+        "Juvenile spinosaurine remains of various sizes are relatively common in the Kem Kem beds, suggesting juveniles occupied the same semiaquatic, piscivorous niche as adults in deltaic habitats.",
+        "The absence of very small (<2 m) individuals may reflect taphonomic bias or that the earliest ontogenetic stages lived in different environments."
+      ],
+      "responds_to": []
+    },
+    "hassler2018_procb": {
+      "stance": "mixed",
+      "key_claims": [
+        "Spinosaurids from Niger and Morocco have the most negative tooth-enamel calcium isotope values of all predators sampled.",
+        "This indicates niche partitioning in which spinosaurids foraged on aquatic resources while abelisaurids and carcharodontosaurids relied on terrestrial prey; it shows diet, not whether prey was caught by swimming or wading."
+      ],
+      "responds_to": [
+        {
+          "id": "amiot2010_geology",
+          "relation": "supports"
+        }
+      ]
+    },
+    "acs2026_isotopes": {
+      "stance": "mixed",
+      "key_claims": [
+        "Calcium isotope work shows Spinosaurus was strongly depleted in heavy calcium, best explained by a predominantly fish diet.",
+        "The isotope researcher interviewed does not think Spinosaurus was fully aquatic: isotopes constrain its food source, not whether it swam or waded."
+      ],
+      "responds_to": [
+        {
+          "id": "hassler2018_procb",
+          "relation": "summarizes"
+        }
+      ]
+    },
+    "smart2024_peerj": {
+      "stance": "mixed",
+      "key_claims": [
+        "In multivariate skull-shape space, spinosaurids including Spinosaurus plot away from other theropods and close to both marine taxa and wading birds.",
+        "Skull shape separates taxa by aquatic versus terrestrial food rather than cleanly by terrestrial, semi-aquatic or aquatic habitat, so skull shape alone cannot settle Spinosaurus's habitat."
+      ],
+      "responds_to": []
+    },
+    "cuff2013_plosone": {
+      "stance": "mixed",
+      "key_claims": [
+        "Beam-theory analysis of CT-derived rostra compares Baryonyx and Spinosaurus with gharial, slender-snouted crocodile and alligator for resistance to bending and torsion.",
+        "The biomechanics suggest spinosaurs were not obligate piscivores, with diet depending on individual body size."
+      ],
+      "responds_to": []
+    },
+    "schade2020_scirep": {
+      "stance": "mixed",
+      "key_claims": [
+        "The endocranium and inner ear of Irritator indicate fast, well-controlled pitch-down head movements and a habitually down-angled snout.",
+        "These features are interpreted as potential adaptations for snapping at small, agile prey such as fish (comparative evidence from another spinosaurid), not as evidence of swimming."
+      ],
+      "responds_to": []
+    },
+    "heckeberg2020_pe": {
+      "stance": "background",
+      "key_claims": [
+        "Lines of von Ebner in spinosaurid teeth from Morocco give tooth formation times of up to about 271 days and replacement rates of about 59-68 days, faster than in other large theropods.",
+        "Fast replacement plus many teeth per jaw may help explain the abundance of spinosaur teeth in the Kem Kem, an alternative to purely ecological explanations."
+      ],
+      "responds_to": []
+    },
+    "maganuco2018_peerj": {
+      "stance": "background",
+      "key_claims": [
+        "A tiny pedal ungual from the Kem Kem beds belongs to the smallest known Spinosaurus individual, an early juvenile.",
+        "It is proportionally identical to the corresponding ungual of the neotype partial skeleton, supporting referral of that skeleton to Spinosaurus."
+      ],
+      "responds_to": [
+        {
+          "id": "ibrahim2014_science",
+          "relation": "supports"
+        }
+      ]
+    },
+    "hendrickx2016_plosone": {
+      "stance": "background",
+      "key_claims": [
+        "The spinosaurid quadrate and jaw joint allowed the lower jaw rami to spread laterally on opening, widening the pharynx to swallow large prey.",
+        "Quadrate morphology indicates that Spinosaurus and a second spinosaurine taxon were present in the Cenomanian of North Africa."
+      ],
+      "responds_to": []
+    },
+    "barker2021_scirep": {
+      "stance": "tangential",
+      "key_claims": [
+        "Two new baryonychine spinosaurids, Ceratosuchops inferodios and Riparovenator milnerae, are described from the Early Cretaceous Wessex Formation of the Isle of Wight, UK.",
+        "Phylogenetic analysis suggests a European origin for Spinosauridae and its major subclades."
+      ],
+      "responds_to": []
+    },
+    "mateus2022_plosone": {
+      "stance": "tangential",
+      "key_claims": [
+        "Iberospinus natarioi is named as a new spinosaurid theropod from the Barremian of Cabo Espichel, Portugal.",
+        "The description informs spinosaurid diversity and phylogeny on the Iberian Peninsula."
+      ],
+      "responds_to": []
+    },
+    "santoscubedo2023_scirep": {
+      "stance": "tangential",
+      "key_claims": [
+        "Protathlitis cinctorrensis is named as a new baryonychine spinosaurid from the Early Cretaceous (Barremian) of Cinctorres, Spain.",
+        "The find adds to the Iberian record of spinosaurid diversity and is used to discuss spinosaurid biogeography."
+      ],
+      "responds_to": []
+    },
+    "sereno2026_science": {
+      "stance": "wading",
+      "key_claims": [
+        "Spinosaurus mirabilis, a new species with a scimitar-shaped cranial crest, is described from the central Sahara, where it was found alongside long-necked sauropods in a riparian (river-margin) habitat.",
+        "Spinosaurid evolution is divided into three discrete phases; the describers, led by the main proponent of the wading model, nicknamed the species the 'hell heron'."
+      ],
+      "responds_to": [
+        {
+          "id": "sereno2022_elife",
+          "relation": "supports"
+        }
+      ]
+    },
+    "wiki_spinosaurus": {
+      "stance": "background",
+      "key_claims": [
+        "Spinosaurus aegyptiacus was described by Ernst Stromer in 1915 from Egypt; the holotype was destroyed in 1944 and later work relies on Moroccan Kem Kem material, including a 2014 neotype.",
+        "The article summarises the ongoing debate between the aquatic/semi-aquatic hypotheses (2014, 2020, 2022 bone density) and the wading/shoreline interpretation (2018, 2021, 2022, 2024)."
+      ],
+      "responds_to": [
+        {
+          "id": "ibrahim2014_science",
+          "relation": "summarizes"
+        },
+        {
+          "id": "ibrahim2020_nature",
+          "relation": "summarizes"
+        },
+        {
+          "id": "fabbri2022_nature",
+          "relation": "summarizes"
+        },
+        {
+          "id": "sereno2022_elife",
+          "relation": "summarizes"
+        }
+      ]
+    },
+    "wiki_spinosauridae": {
+      "stance": "background",
+      "key_claims": [
+        "Spinosauridae is a family of Cretaceous theropods with long, crocodile-like snouts and conical teeth, usually divided into Baryonychinae and Spinosaurinae.",
+        "The family is widely associated with fish-eating and with waterside or semi-aquatic habits, with the degree of aquatic adaptation debated."
+      ],
+      "responds_to": []
+    },
+    "wiki_ernst_stromer": {
+      "stance": "background",
+      "key_claims": [
+        "Ernst Stromer was the German palaeontologist who described Spinosaurus aegyptiacus from Egyptian material collected in the early 20th century.",
+        "On 25 April 1944 an RAF bombing raid on Munich destroyed most of his Egyptian specimens on display in the Bavarian State Collection of Palaeontology, including the only known Spinosaurus skeleton."
+      ],
+      "responds_to": []
+    },
+    "wiki_spinosaurus_mirabilis": {
+      "stance": "background",
+      "key_claims": [
+        "Spinosaurus mirabilis is a second Spinosaurus species named in 2026 from the Cenomanian Farak Formation of Niger, distinguished by an enlarged nasal-prefrontal crest and nicknamed 'hell heron' by its describers.",
+        "Its remains come from a fluvial system where it coexisted with Carcharodontosaurus, sauropods and crocodylomorphs."
+      ],
+      "responds_to": [
+        {
+          "id": "sereno2026_science",
+          "relation": "summarizes"
+        }
+      ]
+    },
+    "wiki_kem_kem_group": {
+      "stance": "background",
+      "key_claims": [
+        "The Kem Kem Group of eastern Morocco is a mid-Cretaceous (Cenomanian) fluvial and deltaic sequence with an abundant fossil record of fish, crocodyliforms, pterosaurs and large predatory dinosaurs.",
+        "It is the source of most Moroccan Spinosaurus material and provides the environmental context for the ecology debate."
+      ],
+      "responds_to": []
+    },
+    "wiki_baryonyx": {
+      "stance": "background",
+      "key_claims": [
+        "Baryonyx walkeri, from the Early Cretaceous of England, was the first spinosaurid known from a substantial skeleton.",
+        "Its preserved stomach contents include fish scales and bones of a juvenile ornithopod, evidence that spinosaurids ate fish but were not exclusively piscivorous (comparative evidence)."
+      ],
+      "responds_to": []
+    },
+    "wiki_suchomimus": {
+      "stance": "background",
+      "key_claims": [
+        "Suchomimus tenerensis is a large baryonychine spinosaurid from the Early Cretaceous Elrhaz Formation of Niger with a long, crocodile-like snout and fish-eating adaptations.",
+        "It is a frequent comparison taxon for Spinosaurus (e.g. in buoyancy and bone-density studies), but the article itself does not argue for either side of the aquatic debate."
+      ],
+      "responds_to": []
+    },
+    "natgeo2020_tail": {
+      "stance": "aquatic",
+      "key_claims": [
+        "Journalistic coverage of the 2020 tail discovery presenting Spinosaurus as the first known swimming dinosaur with a fin-like, propulsive tail."
+      ],
+      "responds_to": [
+        {
+          "id": "ibrahim2020_nature",
+          "relation": "reports_on"
+        }
+      ]
+    },
+    "harvard2020_gazette": {
+      "stance": "aquatic",
+      "key_claims": [
+        "Harvard co-authors Stephanie Pierce and George Lauder built robotic tail models showing that the large, flexible tail fin would have given Spinosaurus strong propulsive thrust in water, similar to a salamander or crocodile tail."
+      ],
+      "responds_to": [
+        {
+          "id": "ibrahim2020_nature",
+          "relation": "reports_on"
+        }
+      ]
+    },
+    "uchicago2022_news": {
+      "stance": "wading",
+      "key_claims": [
+        "University press release reporting new evidence that Spinosaurus was too land-adapted to function even as a slow underwater predator, and was instead a shoreline/wading hunter."
+      ],
+      "responds_to": [
+        {
+          "id": "sereno2022_elife",
+          "relation": "reports_on"
+        }
+      ]
+    },
+    "uchicago2024_news": {
+      "stance": "mixed",
+      "key_claims": [
+        "University press release covering two studies that continue the debate over whether Spinosaurus pursued prey underwater or hunted along the shoreline: the 2024 critique of bone-density inference and the bone-density authors' reply."
+      ],
+      "responds_to": [
+        {
+          "id": "myhrvold2024_plosone",
+          "relation": "reports_on"
+        },
+        {
+          "id": "fabbri2022_biorxiv_reply",
+          "relation": "reports_on"
+        }
+      ]
+    },
+    "sciencenews2025_debate": {
+      "stance": "mixed",
+      "key_claims": [
+        "Feature article (prompted by Spinosaurus swimming in Jurassic World Rebirth) explaining that the hypothesis that Spinosaurus lived mostly submerged remains highly controversial, and laying out evidence on both sides."
+      ],
+      "responds_to": [
+        {
+          "id": "ibrahim2014_science",
+          "relation": "reports_on"
+        },
+        {
+          "id": "ibrahim2020_nature",
+          "relation": "reports_on"
+        },
+        {
+          "id": "sereno2022_elife",
+          "relation": "reports_on"
+        }
+      ]
+    }
+  }
+}

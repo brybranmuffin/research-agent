@@ -1,0 +1,14 @@
+corpus/raw/
+__pycache__/
+.DS_Store
+
+# Secrets
+.env
+
+# Run state (per-run state.db, outputs) and built corpus index
+runs/
+corpus.db
+
+# Python / env
+.venv/
+*.pyc
