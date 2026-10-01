@@ -1,6 +1,7 @@
 # Notes
 
 Details behind every point are in [DETAILED_NOTES.md](DETAILED_NOTES.md).
+Use of "We" refers to me (Bryant Bettencourt) and Claude Code. 
 
 ## What we went deep on, and why
 
@@ -35,14 +36,14 @@ Context management came almost for free: no agent keeps a transcript, and every 
 Three cuts matter most for the general problem of keeping agents coherent over a long horizon:
 
 1. **Long-term memory across runs.**
-   - *Today:* memory is durable *within* a run. It survives crashes and resumes, but every new question starts from nothing.
+   - *Today:* memory is durable *within* a run. It survives crashes and resumes, but every new question starts from nothing. Basically there is no current ability to ask follow up questions.
    - *Next:* persist verified claims and extractions keyed by (document, page window) and reuse them across runs and questions, so research accumulates instead of repeating. A LangGraph Store would fit.
 2. **Context compaction.**
    - *Today:* not needed at this horizon. Every prompt is rebuilt from the store with hard caps, so prompt size stays flat.
    - *Next:* longer runs or larger corpora would hit those caps and silently drop evidence. Compaction would replace them: rolling summaries of the evidence per sub-question, and compressed plan history.
 3. **A downloaded corpus instead of a web-search agent.**
    - *Today:* a pinned local corpus makes runs reproducible and keeps the debate's real conflicts inside a known set of sources. The cost is discovery: the system can't find anything outside its 34 documents.
-   - *Next:* a fetch worker that searches the web, downloads and hashes new sources, and ingests them into the same index, so verification and verdicts apply unchanged.
+   - *Next:* a fetch worker that searches the web, downloads and hashes new sources, and ingests them into the same index, so verification and verdicts apply unchanged. However new verification will need to be authored for specific failures from web search.
 
 **Functional improvements** (found in the first live run; details in DETAILED_NOTES §9):
 - **Stance attribution:** critique papers' restatements of the views they rebut were tagged with the rebutted view, which inflated "contested". Next: an own/reported field per claim.

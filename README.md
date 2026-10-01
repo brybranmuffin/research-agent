@@ -38,7 +38,7 @@ The topic was picked because the scientific literature genuinely disagrees. One 
           ┌──────────────────────────────────── SHARED STATE STORE (SQLite, WAL) ────────────────────────┐
           │  goal & plan versions │ task queue + leases │ candidates │ claims │ sections │ event/trace log │
           └──────┬──────────────────────────────┬──────────────────────────────────┬────────────────────┘
-                 │ claim / complete             │ claim / complete                 │ claim / complete
+                 │                              │                                  │ 
           ┌──────▼───────┐              ┌───────▼────────┐                 ┌───────▼────────┐
           │ SEARCH  ×1   │              │ EXTRACT  ×2    │                 │ SYNTHESIZE ×1  │
           │ (process)    │              │ (processes)    │                 │ (process)      │
@@ -82,7 +82,7 @@ Each worker gets a fresh context for every task. No agent keeps a running transc
 
 ## Stack
 
-- Python 3.13, **LangChain** (`langchain-core`): forced tool calls, `@tool` tools, `ChatPromptTemplate`, and a callback handler that records every LLM and tool call
+- Python 3.13, **LangChain** (`langchain-core`): forced tool calls, `@tool` tools, s`ChatPromptTemplate`, and a callback handler that records every LLM and tool call
 - **NVIDIA NIM** (free tier) via `langchain-nvidia-ai-endpoints`; each agent declares its own model (default `google/gemma-4-31b-it`)
 - **SQLite** (standard library): the shared state store (WAL mode) and the corpus full-text index (FTS5)
 - **Pydantic** for typed outputs, **pypdf** and **BeautifulSoup** for text extraction, **RapidFuzz** for quote matching, **pytest**
@@ -125,18 +125,19 @@ Requires Python 3.11+ and a free NVIDIA NIM key from [build.nvidia.com](https://
 ```bash
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-cp .env.example .env                     # then set NVIDIA_API_KEY
+cp .env.example .env                          # then set NVIDIA_API_KEY
 
-python corpus/fetch_corpus.py            # download the 34 open-access sources, sha256-verified (~125 MB)
-python run.py ingest                     # parse PDFs/HTML -> corpus.db (chunks + FTS5 index), ~20 s
-
-python run.py                            # run the demo question (about 20-25 min on the free tier)
-python run.py -v                         # same, and stream every process's log lines to the terminal
-python run.py "your question" --chaos    # seeded faults: tool errors, malformed LLM output, a killed worker
-python run.py --resume <run_id>          # Ctrl-C a run, then continue it from state.db
-python run.py replay <run_id>            # play a recorded run back from its trace (no keys, no network)
+python corpus/fetch_corpus.py                 # download the 34 open-access sources, sha256-verified (~125 MB)
+python run.py ingest                          # parse PDFs/HTML -> corpus.db (chunks + FTS5 index), ~20 s
+python run.py                                 # run the demo question (about 20-25 min on the free tier)'
+python run.py "<question about spinosaurus>"  # run your own question about spinosaurus (this topic constraint was due to corpus limitations)
+python run.py -v                              # same, and stream every process's log lines to the terminal
+python run.py --resume <run_id>               # Ctrl-C a run, then continue it from state.db
+python run.py replay <run_id>                 # play a recorded run back from its trace (no keys, no network)
 
 pytest -q                                # queue, verification, orchestrator and launcher tests (no network)
+python run.py "your question" --chaos    # There is a chaos mode with seeded faults such as tool errors, malformed LLM output, a killed worker. This mode is untested but can be run, just ran out of time here.
+
 ```
 
 Each run writes to `runs/<run_id>/`: `brief.md` (the cited brief), `run_report.md` (steps, retries, recoveries, plan history, verification stats, prompt size per step type), `state.db` (everything), and `logs/` (one log per process).
