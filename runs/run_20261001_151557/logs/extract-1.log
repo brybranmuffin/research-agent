@@ -1,0 +1,22 @@
+[extract-1] task 6 extract SQ1 attempt 1: claimed
+[extract-1] task 6 extract SQ1 attempt 1: done {"doc_id": "honeholtz2021_pe", "units_read": [10, 11, 12, 13, 14, 15], "claims": 6, "verified": 5, "rejected": 1}
+[extract-1] task 9 extract SQ1 attempt 1: claimed
+[extract-1] task 9 extract SQ1 attempt 1: done {"doc_id": "gimsa2021_life", "units_read": [1, 2, 3, 4, 5, 6], "claims": 6, "verified": 5, "rejected": 1}
+[extract-1] task 11 extract SQ2 attempt 1: claimed
+[extract-1] task 11 extract SQ2 attempt 1: done {"doc_id": "myhrvold2022_biorxiv", "units_read": [2, 3, 4], "claims": 6, "verified": 6, "rejected": 0}
+[extract-1] task 14 extract SQ3 attempt 1: claimed
+[extract-1] task 14 extract SQ3 attempt 1: done {"doc_id": "hassler2018_procb", "units_read": [2, 3, 4, 16, 17, 18], "claims": 6, "verified": 6, "rejected": 0}
+[extract-1] task 15 extract SQ3 attempt 1: claimed
+[extract-1] task 15 extract SQ3 attempt 1: done {"doc_id": "wiki_spinosaurus", "units_read": [11, 12, 13], "claims": 3, "verified": 3, "rejected": 0}
+[extract-1] task 18 extract SQ4 attempt 1: claimed
+[extract-1] task 18 extract SQ4 attempt 1: done {"doc_id": "schade2020_scirep", "units_read": [1, 2, 3, 4, 5], "claims": 6, "verified": 6, "rejected": 0}
+[extract-1] task 20 extract SQ4 attempt 1: claimed
+[extract-1] task 20 extract SQ4 attempt 1: done {"doc_id": "heckeberg2020_pe", "units_read": [1, 2, 3, 11, 12, 13], "claims": 6, "verified": 6, "rejected": 0}
+[extract-1] task 22 extract SQ5 attempt 1: claimed
+[extract-1] task 22 extract SQ5 attempt 1: done {"doc_id": "henderson2018_peerj", "units_read": [1, 2, 3, 7, 8, 9], "claims": 6, "verified": 6, "rejected": 0}
+[extract-1] task 24 extract SQ5 attempt 1: claimed
+[extract-1] task 24 extract SQ5 attempt 1: done {"doc_id": "honeholtz2021_pe", "units_read": [1, 2, 3, 12, 13, 14], "claims": 6, "verified": 6, "rejected": 0}
+[extract-1] task 32 extract SQ4 attempt 1: claimed
+[extract-1] task 32 extract SQ4 attempt 1: done {"doc_id": "wiki_baryonyx", "units_read": [1, 2, 3, 8, 9, 10], "claims": 6, "verified": 6, "rejected": 0}
+[extract-1] task 34 extract SQ4 attempt 1: claimed
+[extract-1] task 34 extract SQ4 attempt 1: done {"doc_id": "wiki_spinosauridae", "units_read": [6, 7, 8], "claims": 6, "verified": 6, "rejected": 0}

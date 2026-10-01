@@ -5,11 +5,17 @@ __pycache__/
 # Secrets
 .env
 
-# Run state (per-run state.db, outputs) and built corpus index
-runs/
+# Run state stays local, except the recorded example run (replayable without an API key)
+runs/*
+!runs/run_20261001_151557/
+
+# SQLite's temporary write-ahead files (replay creates them when it opens a run)
+*.db-wal
+*.db-shm
+
+# Built corpus index (rebuild with: python run.py ingest)
 corpus.db
 
 # Python / env
 .venv/
 *.pyc
-.*NOTES.md

@@ -22,8 +22,8 @@ PROMPTS = {
 Call the Plan tool with:
 - goal: one sentence restating what the final brief must answer.
 - acceptance_criteria: 2-4 checkable criteria for a good brief (e.g. "presents the evidence for and against", "states how strong each line of evidence is").
-- hypotheses: 2-4 competing answers to the question. Each has a short snake_case id (e.g. aquatic_pursuit) and a one-sentence description. Workers tag every claim with one of these ids or 'neutral'.
-- subquestions: 4-6 sub-questions. Each targets ONE distinct line of evidence the corpus can plausibly answer (a specific anatomical feature, a method, an environmental clue, ...), is phrased as a question, and lists the hypothesis ids it tests. Avoid overlap between sub-questions.""",
+- hypotheses: 2-4 competing answers to the question. Each has a short snake_case id (e.g. strong_effect, no_effect) and a one-sentence description. Workers tag every claim with one of these ids or 'neutral'.
+- subquestions: 4-6 sub-questions. Each targets ONE distinct line of evidence the corpus can plausibly answer (a specific mechanism, measurement, method, or kind of evidence), is phrased as a question, and lists the hypothesis ids it tests. Avoid overlap between sub-questions.""",
 
     "planner.review": """You are the PLANNER, reviewing progress at a checkpoint. Memory shows each sub-question's verdict, computed from quote-verified evidence:
 - supported: at least 2 independent primary sources agree and nothing verified opposes them
@@ -43,11 +43,11 @@ Call BottomLine with 120-200 words that answer the research question directly, s
 
     "search.queries": """You are the SEARCH agent. Write 1-3 keyword queries for the fts_search tool to find corpus passages that answer the sub-question.
 
-The index is BM25 full-text search with stemming over research papers and web pages. Use distinctive technical terms (anatomical structures, measurements, method names, taxon names), not full sentences or questions. Make the queries complementary: together they should surface evidence for each competing hypothesis. Call SearchQueries.""",
+The index is BM25 full-text search with stemming over research papers and web pages. Use distinctive technical terms (named entities, measurements, method names, field-specific terms), not full sentences or questions. Make the queries complementary: together they should surface evidence for each competing hypothesis. Call SearchQueries.""",
 
     "search.rank": """You are the SEARCH agent, choosing which documents the extraction agent will read for this sub-question. Each candidate shows its best-matching snippets.
 
-Call SearchSelection with the documents (up to the number given in the task) most likely to contain direct evidence: prefer primary research papers with on-topic snippets, cover different sides of the question, and skip documents that are only tangentially related (other species or other topics) unless their snippets are directly relevant. Give a one-line reason per pick. Use doc_ids exactly as listed.""",
+Call SearchSelection with the documents (up to the number given in the task) most likely to contain direct evidence: prefer primary research papers with on-topic snippets, cover different sides of the question, and skip documents that are only tangentially related (a different subject, scope, or population) unless their snippets are directly relevant. Give a one-line reason per pick. Use doc_ids exactly as listed.""",
 
     "extract": """You are the EXTRACTION agent. Read the page windows of ONE document and extract up to 6 claims that bear on the sub-question.
 

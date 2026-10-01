@@ -544,7 +544,7 @@ CREATE TABLE documents (
     doc_id TEXT PRIMARY KEY,
     type TEXT NOT NULL,            -- pdf | html
     title TEXT, authors_json TEXT, first_author TEXT, year INTEGER, venue TEXT,
-    source_kind TEXT NOT NULL,     -- primary (papers) | secondary (web pages)
+    source_kind TEXT NOT NULL,     -- primary | secondary (manifest field; default: pdf -> primary, html -> secondary)
     license TEXT, sha256 TEXT,
     n_units INTEGER NOT NULL,      -- pages (pdf) or sections (html)
     unit_labels_json TEXT          -- section titles (html)
@@ -700,7 +700,8 @@ def insert_document(conn: sqlite3.Connection, meta: dict, units: list[list[tuple
         "INSERT INTO documents VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
         (meta["id"], meta["type"], meta.get("title"), json.dumps(meta.get("authors") or []),
          _first_author_key(meta.get("authors") or []), meta.get("year"), meta.get("venue"),
-         "primary" if meta["type"] == "pdf" else "secondary", meta.get("license"), meta.get("sha256"),
+         meta.get("source_kind") or ("primary" if meta["type"] == "pdf" else "secondary"),
+         meta.get("license"), meta.get("sha256"),
          len(units), json.dumps(labels) if labels else None))
     n = 0
     for unit_no, chunks in enumerate(units, start=1):

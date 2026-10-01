@@ -1,0 +1,24 @@
+[extract-2] task 7 extract SQ1 attempt 1: claimed
+[extract-2] task 7 extract SQ1 attempt 1: done {"doc_id": "ibrahim2020_nature", "units_read": [2, 3, 4, 6, 7, 8], "claims": 6, "verified": 6, "rejected": 0}
+[extract-2] task 8 extract SQ1 attempt 1: claimed
+[extract-2] task 8 extract SQ1 attempt 1: done {"doc_id": "henderson2018_peerj", "units_read": [2, 3, 4, 19, 20, 21], "claims": 6, "verified": 6, "rejected": 0}
+[extract-2] task 10 extract SQ2 attempt 1: claimed
+[extract-2] task 10 extract SQ2 attempt 1: done {"doc_id": "myhrvold2024_plosone", "units_read": [4, 5, 6, 33, 34, 35], "claims": 6, "verified": 6, "rejected": 0}
+[extract-2] task 12 extract SQ2 attempt 1: claimed
+[extract-2] task 12 extract SQ2 attempt 1: done {"doc_id": "aureliano2018_paleorxiv", "units_read": [9, 10, 11, 16, 17, 18], "claims": 6, "verified": 6, "rejected": 0}
+[extract-2] task 13 extract SQ2 attempt 1: claimed
+[extract-2] task 13 extract SQ2 attempt 1: done {"doc_id": "fabbri2022_biorxiv_reply", "units_read": [1, 2, 3, 5, 6, 7], "claims": 6, "verified": 6, "rejected": 0}
+[extract-2] task 16 extract SQ3 attempt 1: claimed
+[extract-2] task 16 extract SQ3 attempt 1: done {"doc_id": "wiki_spinosauridae", "units_read": [7, 8, 9, 11, 12, 13], "claims": 4, "verified": 4, "rejected": 0}
+[extract-2] task 17 extract SQ3 attempt 1: claimed
+[extract-2] task 17 extract SQ3 attempt 1: done {"doc_id": "honeholtz2021_pe", "units_read": [18, 19, 20], "claims": 6, "verified": 6, "rejected": 0}
+[extract-2] task 19 extract SQ4 attempt 1: claimed
+[extract-2] task 19 extract SQ4 attempt 1: done {"doc_id": "hendrickx2016_plosone", "units_read": [1, 2, 3, 33, 34, 35], "claims": 6, "verified": 6, "rejected": 0}
+[extract-2] task 21 extract SQ4 attempt 1: claimed
+[extract-2] task 21 extract SQ4 attempt 1: done {"doc_id": "vullo2016_app", "units_read": [1, 2], "claims": 4, "verified": 4, "rejected": 0}
+[extract-2] task 23 extract SQ5 attempt 1: claimed
+[extract-2] task 23 extract SQ5 attempt 1: done {"doc_id": "sereno2022_elife", "units_read": [2, 3, 4, 6, 7, 8], "claims": 6, "verified": 5, "rejected": 1}
+[extract-2] task 25 extract SQ5 attempt 1: claimed
+[extract-2] task 25 extract SQ5 attempt 1: done {"doc_id": "gimsa2021_life", "units_read": [2, 3, 4], "claims": 2, "verified": 2, "rejected": 0}
+[extract-2] task 33 extract SQ4 attempt 1: claimed
+[extract-2] task 33 extract SQ4 attempt 1: done {"doc_id": "honeholtz2021_pe", "units_read": [10, 11, 12, 19, 20, 21], "claims": 6, "verified": 6, "rejected": 0}

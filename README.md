@@ -2,42 +2,29 @@
 
 A small multi-agent system that takes a research question, gathers and cross-checks sources, and writes a short, cited brief. Separate worker processes split the work into **search**, **extraction**, and **synthesis**. An **orchestrator** plans the work, hands it out, supervises it, and revises the plan.
 
-> **Status:** working end to end. See [How to run](#how-to-run).
+**The system is general; the demo is not.** No code knows anything about dinosaurs:
+- the planner derives hypotheses and sub-questions from whatever question it is given;
+- the workers search, read, and verify whatever corpus has been ingested.
 
----
+The only things specific to the Spinosaurus demo are **the question** (the default in `run.py`) and **the chosen corpus** (`corpus/manifest.json` and its fetch script). Swap those two and the same system researches another topic. See [Another question or corpus](#another-question-or-corpus).
+
+- [NOTES.md](NOTES.md): what we went deep on and why, decisions, cuts, and how we used coding tools.
+- [DETAILED_NOTES.md](DETAILED_NOTES.md): design priorities, mechanisms, parameters, and results from the first live run.
 
 ## Goal
 
 **Chosen problem:** #2, take a research question, gather and cross-check sources, and write a short brief.
 
-**Demo question:**
+**Demo question** (one instance of the general system):
 > *Was* Spinosaurus aegyptiacus *an aquatic pursuit predator, and how strong is the evidence?*
 
 The topic was picked because the scientific literature genuinely disagrees. One camp argues for swimming and diving, based on the paddle-like tail and dense bones. The other argues for wading like a heron, based on buoyancy, stability, and anatomy. Rebuttals and replies run in both directions, so cross-checking has real conflicts to find without us planting any.
 
-**Corpus:** about 30 open-access papers (PDF) and about 10 web pages (HTML), all local. A manifest pins every source by URL, version, license, and sha256 hash, so every run works from identical bytes. A separate answer key, which agents never see, labels each document's stance so the final brief can be scored.
+**Corpus:** 34 open-access sources, all local: 22 PDFs (mostly papers and preprints) and 12 web pages (HTML). A manifest pins every source by URL, version, licence, and sha256 hash, so every run works from identical bytes. It also lists 6 closed-access key papers that are not downloaded; the corpus covers them through replies, summaries, and press. A separate answer key (`eval/corpus_labels.json`), which agents never see, labels each document's stance.
 
-**Outputs:**
-- **Brief:** about 600 to 900 words, one section per sub-question. Every factual sentence cites a source location, and each citation's quote has been checked against the source text. Contested points show both sides and how strong the evidence is for each.
-- **Run report:** steps taken, tasks, retries, recovered failures, plan-revision history with reasons, and prompt tokens per call over the run.
-
----
-
-## Design priorities
-
-The brief asks for depth on a few problems rather than breadth. Effort is split deliberately:
-
-| Tier | Component | Treatment |
-|---|---|---|
-| **1** | **Orchestration + handoff** | Deep. Task lifecycle, atomic claiming, leases, retry budgets, continuous supervision, and plan revision at phase barriers |
-| **1** | **Tool calls + verification** | Deep. Schema-validated outputs with repair, a deterministic quote-grounding gate, and cross-source agreement verdicts |
-| **1** | **Subagents** | Solid. One worker runtime with three role configs (prompt, tools, output schema), each running as its own OS process |
-| **1** | **Memory** | Solid. Durable state in a shared store, kept across crashes so a run can resume in a later session |
-| 2 | Workspace context | Bare bones. A compact snapshot of the run's settled state, rebuilt before each orchestrator decision |
-| 2 | Context management | Bare bones. No transcripts, per-role filtered views, hard caps, and paged document reads |
-| 3 | Prompt caching | Not implemented. Prompts are laid out so a cache could reuse their stable parts, but the free models don't support provider-side caching |
-
----
+**Outputs of a run:**
+- **Brief:** a bottom line, a verdict table, one cited section per sub-question, an appendix of every cited quote, and the sources. Each citation points to a quote that was machine-checked against the source text.
+- **Run report:** steps taken, the timeline, plan revisions and their reasons, task outcomes, retries and recoveries, verification statistics, and prompt size per step type.
 
 ## Architecture
 
@@ -49,7 +36,7 @@ The brief asks for depth on a few problems rather than breadth. Effort is split 
                                       │ creates tasks                              │ reads results
                                       ▼                                            │
           ┌──────────────────────────────────── SHARED STATE STORE (SQLite, WAL) ────────────────────────┐
-          │  goal & plan versions │ task queue + leases │ sources & chunks │ claims │ event/trace log      │
+          │  goal & plan versions │ task queue + leases │ candidates │ claims │ sections │ event/trace log │
           └──────┬──────────────────────────────┬──────────────────────────────────┬────────────────────┘
                  │ claim / complete             │ claim / complete                 │ claim / complete
           ┌──────▼───────┐              ┌───────▼────────┐                 ┌───────▼────────┐
@@ -59,7 +46,7 @@ The brief asks for depth on a few problems rather than breadth. Effort is split 
           │ index search │              │ readers        │                 │ write sections │
           └──────────────┘              └────────────────┘                 └────────────────┘
                  ▲
-          local corpus (PDF + HTML) ── parsed and indexed once at startup, deterministically
+          local corpus (PDF + HTML) ── parsed and indexed once by `run.py ingest`, deterministically
 ```
 
 **The runtime boundary is real.** The orchestrator and every worker run as separate OS processes. They share no memory and never call each other directly. All coordination goes through one SQLite database file in WAL mode. Handoff means writing a task row, claiming it atomically, and writing back a result row.
@@ -68,10 +55,10 @@ The brief asks for depth on a few problems rather than breadth. Effort is split 
 
 The orchestrator calls the LLM only at **phase barriers**. In between, a supervisor loop that never calls the LLM keeps the run healthy.
 
-1. **Plan.** Break the question into sub-questions, each tagged with the hypotheses it tests. The plan is stored as version 1.
-2. **Gather.** For each sub-question, search tasks produce candidate sources, and extract tasks read those sources in page windows and produce claims.
-3. **Cross-check.** For each sub-question, the synthesizer issues a verdict: *supported*, *contested*, or *thin*.
-4. **Review (barrier).** The planner sees the verdicts and may revise the plan. For example, it can add a targeted sub-question for a contested point or more searches for thin coverage. Each revision is a new plan version with a recorded reason. Steps 2 to 4 repeat within a fixed budget.
+1. **Plan.** Break the question into competing hypotheses and 4-6 sub-questions. The plan is stored as version 1.
+2. **Gather.** For each sub-question, a search task picks candidate documents, and extract tasks read them in page windows and produce claims. Every claim's quote is checked against the source before it is stored.
+3. **Cross-check.** For each sub-question, a verdict: *supported*, *contested*, or *thin*.
+4. **Review (barrier).** The planner sees the verdicts and may revise the plan: more searches for a thin sub-question, a new targeted sub-question, retiring one, or done. Each revision is a new plan version with a recorded reason. Steps 2 to 4 repeat at most twice.
 5. **Write and assemble (barrier).** Write one section per sub-question, then assemble the brief and the run report.
 
 ### Agents
@@ -79,102 +66,57 @@ The orchestrator calls the LLM only at **phase barriers**. In between, a supervi
 | Role | Input | Tools | Output |
 |---|---|---|---|
 | **Orchestrator** | Goal, settled-state snapshot | Task creation, plan versioning | Plan versions, tasks, final assembly |
-| **Search** | Sub-question + hypotheses | Full-text search over the corpus index, document listing | Ranked candidate documents with reasons |
+| **Search** | Sub-question + hypotheses | Full-text search over the corpus index, document listing | Up to 4 candidate documents with reasons |
 | **Extract** | Sub-question + one document | Paged PDF reader, sectioned HTML reader | Claims, each with a verbatim quote, location, and stance |
 | **Synthesize** | Sub-question + its verified claims | None (reasons over stored claims) | Cross-check verdicts and cited sections |
 
 Each worker gets a fresh context for every task. No agent keeps a running transcript.
 
----
-
-## Orchestration, handoff, and recovery (Tier 1)
-
-- **Task envelopes** carry the immutable goal, the sub-question id, the plan version, and the task inputs. Every piece of work can be traced back to the question it serves.
-- **Atomic claiming:** a worker claims the next pending task for its role in a single conditional update. Two workers can never take the same task.
-- **Leases:** a claimed task carries an expiry time. If a worker crashes or stalls, the lease runs out, the supervisor puts the task back in the queue, and another worker picks it up.
-- **Retry budgets:** each task gets a limited number of attempts. A task that keeps failing is marked failed. The planner sees this at the next barrier and works around it.
-- **Single writer of the plan:** only the orchestrator creates tasks or changes the plan. Workers only claim tasks and report results. This prevents sub-agents from working at cross purposes.
-- **Deduplication:** repeated searches are collapsed by hashing the query.
-
-### Orchestration parameters
-
-These numbers come from four constraints:
-- **Rate limit.** All processes share one NIM key, which allows roughly 40 requests a minute. This limits throughput, not the worker count.
-- **Corpus size.** About 40 documents.
-- **Horizon target.** About 150 to 250 logged steps per run.
-- **Latency.** Free models take 10 to 40 seconds per call, with occasional queueing over 60 seconds.
-
-**Plan shape**
-
-| Parameter | Value | Reasoning |
-|---|---|---|
-| Initial sub-questions | 4–6 (hard cap 6) | The debate has about 5 lines of evidence: tail, bone density, buoyancy and proportions, skull and neck feeding, paleoenvironment |
-| Max sub-questions after replanning | 8 (at most +2 per review round) | The plan can grow without exploding |
-| Review rounds | max 2 | Round 1 addresses contested or thin sub-questions, and round 2 confirms. More rounds cost calls for little gain |
-
-**Work per sub-question**
-
-| Parameter | Value | Reasoning |
-|---|---|---|
-| Search | 1 task per sub-question, ≤3 queries, top 4 documents | Covers both sides of the debate without reading the whole corpus |
-| Extract | 1 task per (sub-question, document), ≤2 page windows of about 3 pages each, centered on the pages where search found hits | Papers run 15 to 30 pages, so we read where the evidence is |
-
-**Timing and failure handling**
-
-| Parameter | Value | Reasoning |
-|---|---|---|
-| Heartbeat / lease | heartbeat every 10s, lease 45s | Tells a *slow* worker apart from a *dead* one. A dead worker is detected within about 45s |
-| Hard task timeout | 300s | Catches a worker that is alive but stuck in a loop, which heartbeats alone would miss |
-| Retries, transient errors (429, timeout, network, lost worker) | 3 retries (4 attempts), backoff of 2, 8 and 30 seconds | Transient errors deserve patience |
-| Retries, deterministic errors (schema still invalid after repair, unreadable document) | 1 retry (2 attempts) | Retrying the same failure again and again wastes rate limit |
-| Schema repair | 1 per LLM call | One repair fixes most JSON slips |
-| Shared rate limiter | 30 requests/min, a token bucket in the shared store | Leaves headroom under the provider's limit and keeps workers from triggering 429 errors and using up their retries |
-| Supervisor tick / worker poll | 1s / 0.5–2s with idle backoff | Coordination never becomes the bottleneck |
-
-**Barriers and budgets**
-
-| Parameter | Value | Reasoning |
-|---|---|---|
-| Barrier rule | A phase is complete when all its tasks have finished, successfully or not, or after a 10-minute phase timeout | One stuck sub-question can't hold up the whole run |
-| Global budgets | 120 tasks, 250 LLM calls, 30 minutes of wall-clock time | A safety stop. Hitting a limit triggers graceful degradation (see below) |
-
-**Expected size of a run:** about 100 LLM calls plus about 100 tool calls, for about 200 steps in roughly 5 to 10 minutes at 30 requests a minute.
-
-### Graceful degradation
-
-The run always produces a brief. It never fails silently or without output. Graceful degradation kicks in when any of these happens:
-- a budget limit is reached,
-- a phase times out,
-- a sub-question ends up with no verified evidence.
-
-When that happens, the orchestrator skips straight to writing with everything verified so far. Each sub-question that lacks evidence gets an explicit *insufficient evidence* note giving the cause, for example "3 of 4 extract tasks failed". The run report records which trigger fired and when.
-
-## Tool calls and verification (Tier 1)
-
-- **Schema validation:** every LLM output and tool result is checked against a typed schema. Malformed output gets one repair attempt with the validation error fed back, then counts as a task failure.
-- **Quote-grounding gate:** a claim is stored as *verified* only if its quote actually appears in the cited chunk of the source. The check uses deterministic string and fuzzy matching, with no LLM involved. It runs in the storage layer, so no worker can skip it. Fabricated citations are rejected.
-- **Cross-source agreement:** for each sub-question, verified claims are grouped by hypothesis and source. The verdict (*supported*, *contested*, or *thin*) combines independent-source counts with the synthesizer's judgment, and it drives replanning.
-
-## Memory and context (Tiers 1 and 2)
-
-- **Memory** is the shared store: goal, plan versions, tasks, sources, claims, and an append-only event and trace log. It survives crashes. Rerunning against an existing run resumes from the last state saved in the store.
-- **Context is computed, not accumulated.** Before each LLM call, a role-specific view is rendered from the store, covering only settled facts in a fixed order. As a result, prompt size stays flat across the run. Prompt tokens are logged on every call so this can be checked.
-- **Prompt layout**, from most stable to least: role system prompt → sub-agent and tool definitions → memory view → task/query.
-
----
-
 ## Reproducibility
 
-- **Pinned corpus:** a manifest plus a fetch script with hash checks.
-- **Replay (playback):** every run records its full trace (task events, tool calls, LLM prompts and outputs) in its state store. Replaying a run prints that trace in order, as if the run were happening, with no models, network, or API keys. Playback shows *what happened*. Re-executing the system against recorded LLM responses is planned next (see NOTES).
+- **Pinned corpus:** a manifest plus a fetch script that verifies every file's sha256 hash.
+- **Deterministic ingest:** identical source files produce an identical `corpus.db`.
+- **Replay (playback):** every run records its full trace (task events, tool calls, LLM prompts and outputs) in its state store. `run.py replay` prints that trace in order, as if the run were happening, with no models, network, or API keys. It shows *what happened*; re-executing the system against recorded LLM responses is listed as next work in NOTES.
 - **Chaos mode:** seeded fault injection (tool errors, malformed LLM output, a worker killed mid-task) shows recovery. The fixed seed makes the faults repeatable.
+- **Tests:** `pytest -q` runs 58 tests of the queue, verification, orchestrator rules, and launcher output, with no network.
 
 ## Stack
 
-- Python, LangChain
-- **NVIDIA NIM** (free tier) via LangChain; each agent declares its own model
-- SQLite (standard library) for the shared store and its full-text search index
-- PDF and HTML text extraction for the paged readers
+- Python 3.13, **LangChain** (`langchain-core`): forced tool calls, `@tool` tools, `ChatPromptTemplate`, and a callback handler that records every LLM and tool call
+- **NVIDIA NIM** (free tier) via `langchain-nvidia-ai-endpoints`; each agent declares its own model (default `google/gemma-4-31b-it`)
+- **SQLite** (standard library): the shared state store (WAL mode) and the corpus full-text index (FTS5)
+- **Pydantic** for typed outputs, **pypdf** and **BeautifulSoup** for text extraction, **RapidFuzz** for quote matching, **pytest**
+
+## Replay the recorded run (no API key needed)
+
+`runs/run_20261001_151557/` holds one complete recorded run of the demo question: 23.9 min, 111 steps, 40 tasks, one plan revision, and 3 provider timeouts that were retried and recovered. Replaying it needs only the Python dependencies: no API key, no corpus download, no ingest.
+
+```bash
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+
+python run.py replay run_20261001_151557                          # paced playback, about 25 s (20x speed, pauses capped at 0.5 s)
+python run.py replay run_20261001_151557 --speed 1e9 --max-gap 0  # print everything at once
+python run.py replay runs/run_20261001_151557                     # a path to any run directory also works
+```
+
+Replay prints one line per event or LLM call, timestamped from the start of the run, and then the brief:
+
+```
+t+   92.9s  extract-2     tool read_pdf({"doc_id": "ibrahim2020_nature", "start": 2, "end": 4}) -> 3 results
+t+   92.9s  extract-2     LLM extract [2936->708 tokens, 53.0s]: [{"name": "ExtractedClaims", "args": {"claims": [...
+t+  689.5s  synthesize-1  SQ4 verdict downgraded contested -> thin
+t+  767.8s  orchestrator  plan v2: more_search SQ4 (): The verdict is 'thin' because most evidence is tagged as 'neutral'…
+t+ 1051.1s  synthesize-1  task 37 transient error on attempt 1, will retry: ReadTimeout: HTTPSConnectionPool(...)…
+```
+
+The same folder can be read directly:
+- `brief.md`: the brief;
+- `run_report.md`: steps, timeline, plan history, retries, verification stats, prompt size per step type;
+- `logs/`: one log per process;
+- `state.db`: the full SQLite state, including every task, claim, event, and LLM response.
+
+Replay is playback: it shows what happened and does not re-run the system. LLM lines are stamped with the time the call started.
 
 ## How to run
 
@@ -188,14 +130,29 @@ cp .env.example .env                     # then set NVIDIA_API_KEY
 python corpus/fetch_corpus.py            # download the 34 open-access sources, sha256-verified (~125 MB)
 python run.py ingest                     # parse PDFs/HTML -> corpus.db (chunks + FTS5 index), ~20 s
 
-python run.py                            # run the demo question (about 10-15 min on the free tier)
+python run.py                            # run the demo question (about 20-25 min on the free tier)
+python run.py -v                         # same, and stream every process's log lines to the terminal
 python run.py "your question" --chaos    # seeded faults: tool errors, malformed LLM output, a killed worker
 python run.py --resume <run_id>          # Ctrl-C a run, then continue it from state.db
 python run.py replay <run_id>            # play a recorded run back from its trace (no keys, no network)
 
-pytest -q                                # queue + verification guarantees (no network)
+pytest -q                                # queue, verification, orchestrator and launcher tests (no network)
 ```
 
-Each run writes to `runs/<run_id>/`: `brief.md` (the cited brief), `run_report.md` (steps, retries, recoveries, plan history, verification stats, context size over the run), `state.db` (everything), and `logs/` (one log per process).
+Each run writes to `runs/<run_id>/`: `brief.md` (the cited brief), `run_report.md` (steps, retries, recoveries, plan history, verification stats, prompt size per step type), `state.db` (everything), and `logs/` (one log per process).
 
-See **NOTES.md** for what we went deep on and why, the decisions we're most confident about, what was cut, and how coding tools were used.
+### Another question or corpus
+
+Nothing else needs to change; the corpus and the question are the only inputs.
+
+1. **Put the documents in `corpus/raw/`** as `<id>.pdf` or `<id>.html`.
+2. **Describe each one in `corpus/manifest.json`:**
+   ```json
+   {"id": "smith2024", "type": "pdf", "title": "...", "authors": ["Jane Smith", "..."], "year": 2024,
+    "venue": "...", "license": "CC-BY-4.0", "status": "ok"}
+   ```
+   - Optional: `"sha256"` pins the exact bytes.
+   - Optional: `"source_kind"` (`"primary"` or `"secondary"`) overrides the default, which treats PDFs as primary sources and web pages as secondary. Only primary sources with distinct first authors count as independent confirmation.
+3. **Build the index and ask:** `python run.py ingest`, then `python run.py "your question"`.
+
+`corpus/fetch_corpus.py` and `eval/corpus_labels.json` belong to the demo corpus; the system itself never reads the answer key. The planner sees the corpus as a list of titles, capped at 150. Corpora much larger than that would need a summarized listing.

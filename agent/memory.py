@@ -69,7 +69,7 @@ def claims_block(conn: sqlite3.Connection, subq_id: int, cap: int) -> tuple[str,
 def for_plan(conn: sqlite3.Connection) -> str:
     docs = conn.execute("SELECT doc_id, year, source_kind, title FROM corpus.documents "
                         "ORDER BY source_kind, year, doc_id").fetchall()
-    lines = [f"- {d['doc_id']} ({d['year']}, {d['source_kind']}): {d['title']}" for d in docs]
+    lines = _cap([f"- {d['doc_id']} ({d['year']}, {d['source_kind']}): {d['title']}" for d in docs], 150, "documents")
     return f"Local corpus ({len(docs)} documents; workers can search and read ONLY these):\n" + "\n".join(lines)
 
 

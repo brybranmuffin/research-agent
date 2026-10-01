@@ -136,3 +136,13 @@ def test_page_windows_center_on_hits_and_do_not_overlap():
 def test_grouped_citations_are_split_for_validation_and_rendering():
     assert tools.split_grouped_citations("A [C12, C15]. B [C3]. C [C1; C2 ,C9].") == \
         "A [C12][C15]. B [C3]. C [C1][C2][C9]."
+
+
+def test_manifest_can_override_source_kind(tmp_path):
+    c = sqlite3.connect(tmp_path / "c.db")
+    c.executescript(store.CORPUS_SCHEMA)
+    store.insert_document(c, {"id": "report", "type": "html", "authors": ["A B"], "source_kind": "primary"},
+                          [[("text " * 30, False)]])
+    store.insert_document(c, {"id": "page", "type": "html", "authors": ["C D"]}, [[("text " * 30, False)]])
+    kinds = dict(c.execute("SELECT doc_id, source_kind FROM documents"))
+    assert kinds == {"report": "primary", "page": "secondary"}

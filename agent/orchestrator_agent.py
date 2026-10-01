@@ -41,7 +41,7 @@ RESEARCH_KINDS = ("search", "extract", "cross_check")
 # --------------------------------------------------------------------------- planner output schemas
 
 class Hypothesis(BaseModel):
-    id: str = Field(description="short snake_case id, e.g. aquatic_pursuit")
+    id: str = Field(description="short snake_case id, e.g. strong_effect")
     description: str
 
 
